@@ -1,0 +1,39 @@
+name: CI
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          java-version: '17'
+          distribution: 'adopt'
+          cache: gradle
+
+      - name: Change wrapper permissions
+        run: chmod +x ./gradlew
+        shell: bash
+
+      - name: Checkout submodules
+        run: git submodule update --init --recursive
+        shell: bash
+
+      - name: Build
+        run: ./gradlew clean build
+        shell: bash
+
+      - name: Upload signed release APK
+        uses: actions/upload-artifact@v2
+        with:
+          name: build-dir
+          path: ./app/build/libs/app-standalone.jar
+
